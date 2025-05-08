@@ -1,1 +1,5 @@
-theme: jekyll-theme-cayman
+title: Event Schemas Documentation
+description: Documentation for our event schemas
+theme: jekyll-theme-slate  # or any other theme you prefer
+plugins:
+  - jekyll-remote-theme
