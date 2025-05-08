@@ -1,9 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "Payment Processing CloudEvent Schema",
-  "description": "Schema for payment processing events following CloudEvents specification",
-  "required": ["id", "source", "specversion", "type", "datacontenttype", "dataschema", "time", "data"],
+  "title": "Billpay CloudEvent Schema",
+  "description": "Schema for payment and refund processing events following CloudEvent specification",
+  "required": [
+    "id",
+    "source",
+    "specversion",
+    "type",
+    "datacontenttype",
+    "dataschema",
+    "time",
+    "data"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -14,32 +23,43 @@
     "source": {
       "type": "string",
       "description": "Source system generating the event",
-      "enum": ["BILLPAY"],
       "examples": ["BILLPAY"]
     },
     "specversion": {
       "type": "string",
       "description": "CloudEvents specification version",
-      "enum": ["1.0"],
       "examples": ["1.0"]
     },
     "type": {
       "type": "string",
       "description": "Type of event",
-      "enum": ["PAYMENT_PROCESSING"],
+      "enum": [
+        "PAYMENT_PENDING",
+        "PAYMENT_SCHEDULED",
+        "PAYMENT_ACCEPTED",
+        "PAYMENT_DECLINED",
+        "PAYMENT_PROCESSING",
+        "PAYMENT_PROCESSED",
+        "PAYMENT_PAID",
+        "PAYMENT_RETURNED",
+        "PAYMENT_REPRESENTED",
+        "PAYMENT_REPRESENTING",
+        "PAYMENT_CANCELLED"
+      ],
       "examples": ["PAYMENT_PROCESSING"]
     },
     "datacontenttype": {
       "type": "string",
       "description": "Content type of the data attribute",
-      "enum": ["application/json"],
       "examples": ["application/json"]
     },
     "dataschema": {
       "type": "string",
       "format": "uri",
       "description": "URI where schema is hosted",
-      "examples": ["https://schemas.example.com/payment-processing/v1.0.json"]
+      "examples": [
+        "https://github.aexp.com/amex-eng/billpay-core/docs/billpay-events.v1.json"
+      ]
     },
     "time": {
       "type": "string",
@@ -54,11 +74,23 @@
       "properties": {
         "transaction": {
           "type": "object",
-          "description": "Details of the payment transaction",
+          "description": "Details of a Payment or Refund transaction",
           "required": [
-            "id", "type", "account", "instrument", "instrumentEnrollmentId", 
-            "confirmationCode", "status", "source", "option", "frequency", 
-            "money", "datetime", "moneyMovementRequired", "presentmentSequence", "isSplit"
+            "id",
+            "type",
+            "account",
+            "instrument",
+            "instrumentEnrollmentId",
+            "confirmationCode",
+            "status",
+            "source",
+            "option",
+            "frequency",
+            "money",
+            "datetime",
+            "moneyMovementRequired",
+            "presentmentSequence",
+            "isSplit"
           ],
           "properties": {
             "id": {
@@ -69,13 +101,13 @@
             "type": {
               "type": "string",
               "description": "Transaction type",
-              "enum": ["PAYMENT"],
+              "enum": ["PAYMENT", "REFUND"],
               "examples": ["PAYMENT"]
             },
             "account": {
               "type": "object",
               "description": "Account information",
-              "required": ["pan15", "token", "country", "type", "productType", "isBasic"],
+              "required": ["pan15", "token", "country", "type", "isBasic"],
               "properties": {
                 "pan15": {
                   "type": "string",
@@ -117,11 +149,16 @@
             "instrument": {
               "type": "object",
               "description": "Payment instrument details",
-              "required": ["token", "type", "redactedIdentifier", "institutionCode", "institutionName"],
+              "required": [
+                "token",
+                "type",
+                "redactedIdentifier",
+                "institutionCode",
+                "institutionName"
+              ],
               "properties": {
                 "token": {
                   "type": "string",
-                  "format": "uuid",
                   "description": "Instrument token",
                   "examples": ["123e4567-e89b-12d3-a456-426614174000"]
                 },
@@ -162,17 +199,36 @@
             "status": {
               "type": "string",
               "description": "Transaction status",
+              "enum": [
+                "PENDING",
+                "SCHEDULED",
+                "ACCEPTED",
+                "DECLINED",
+                "PROCESSING",
+                "PROCESSED",
+                "PAID",
+                "RETURNED",
+                "REPRESENTED",
+                "REPRESENTING",
+                "CANCELLED"
+              ],
               "examples": ["PROCESSING"]
             },
             "source": {
               "type": "string",
               "description": "Source channel of the transaction",
+              "enum": ["WEB", "MOBILE", "REP", "IVR", "OTHER"],
               "examples": ["WEB"]
             },
             "option": {
               "type": "string",
               "description": "Payment option selected",
-              "enum": ["MINIMUM_DUE", "STATEMENT_BALANCE", "TOTAL_BALANCE", "OTHER_AMOUNT"],
+              "enum": [
+                "MINIMUM_DUE",
+                "STATEMENT_BALANCE",
+                "TOTAL_BALANCE",
+                "OTHER_AMOUNT"
+              ],
               "examples": ["MINIMUM_DUE"]
             },
             "frequency": {
@@ -225,13 +281,13 @@
                 "clearingDate": {
                   "type": "string",
                   "format": "date",
-                  "description": "Date of clearing",
+                  "description": "Date of payment clearing",
                   "examples": ["2025-05-09"]
                 },
                 "executionTime": {
                   "type": "string",
                   "format": "date-time",
-                  "description": "ISO UTC timestamp when executed",
+                  "description": "ISO UTC timestamp when transaction is executed",
                   "examples": ["2025-05-07T11:45:22Z"]
                 }
               }
@@ -258,7 +314,7 @@
         "audit": {
           "type": "object",
           "description": "Audit information",
-          "required": ["updateBy", "updateTime", "execution"],
+          "required": ["updateBy", "updateTime"],
           "properties": {
             "updateBy": {
               "type": "string",
@@ -281,12 +337,17 @@
                   "system": {
                     "type": "string",
                     "description": "System where execution occurred",
+                    "enum": ["GAR", "CAS", "MultiRail"],
                     "examples": ["GAR", "CAS", "MultiRail"]
                   },
                   "activity": {
                     "type": "string",
                     "description": "Activity performed",
-                    "examples": ["Reduce Statement Balance", "Increase Credit Exposure", "Initiate Money Movement"]
+                    "examples": [
+                      "Reduce Statement Balance",
+                      "Increase Credit Exposure",
+                      "Initiate Money Movement"
+                    ]
                   },
                   "executedAt": {
                     "type": "string",
