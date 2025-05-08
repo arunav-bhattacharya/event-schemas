@@ -6,111 +6,190 @@
     <title>Event Schemas Documentation</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
     <style>
+        /* Base body and container styling */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            padding: 20px;
+            padding: 15px; /* Adjusted for better spacing on all devices */
+            background-color: #f8f9fa; /* Light background for the page */
         }
         .container {
-            max-width: 1000px;
+            max-width: 1000px; /* Max width for content */
+            padding-left: 10px;
+            padding-right: 10px;
         }
         h1 {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid #eaecef;
+            font-size: 1.8rem; /* Slightly reduced for balance */
+            color: #343a40;
         }
+        .lead {
+            font-size: 1.1rem; /* Enhanced lead paragraph size */
+            color: #495057;
+        }
+
+        /* Schema card styling */
         .schema-card {
             margin-bottom: 20px;
-            border: 1px solid rgba(0,0,0,.125);
-            border-radius: .25rem;
+            border: 1px solid #dee2e6; /* Softer border color */
+            border-radius: .3rem; /* Slightly more rounded corners */
             transition: all 0.3s ease;
+            background-color: #fff; /* Ensure card background is white */
         }
         .schema-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12); /* Enhanced hover effect */
         }
-        pre {
-            background-color: #f6f8fa;
-            border-radius: 3px;
-            padding: 16px;
-            overflow: auto;
-            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 85%;
+        .card-header {
+            background-color: #e9ecef; /* Light grey header for cards */
+            border-bottom: 1px solid #dee2e6;
         }
-        .json-key {
-            color: #0366d6;
+        .card-header h2 {
+            font-size: 1.4rem; /* Adjusted card title size */
         }
-        .json-string {
-            color: #032f62;
-        }
-        .json-number {
-            color: #005cc5;
-        }
-        .json-boolean {
-            color: #d73a49;
-        }
-        .json-null {
-            color: #6a737d;
-        }
+
+        /* JSON syntax highlighting (original styles maintained) */
+        .json-key { color: #0366d6; font-weight: bold; }
+        .json-string { color: #032f62; }
+        .json-number { color: #005cc5; }
+        .json-boolean { color: #d73a49; font-weight: bold; }
+        .json-null { color: #6a737d; font-style: italic; }
+
+        /* Schema viewer and controls */
         .schema-viewer {
-            display: none;
+            display: none; /* Hidden by default */
             margin-top: 15px;
+            border: 1px solid #ced4da; /* Consistent border color */
+            padding: 15px; /* More padding inside viewer */
+            border-radius: .25rem;
+            background-color: #fdfdfd; /* Slightly off-white for viewer background */
         }
-        .view-button {
-            cursor: pointer;
-            color: #0366d6;
+        .view-button { /* Styling for the "View Schema" button */
+            padding: 8px 15px; /* Increased padding for touch */
+            font-size: 0.95rem;
         }
-        .view-button:hover {
-            text-decoration: underline;
+        .schema-controls {
+            margin-bottom: 15px; /* Space below control buttons */
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ced4da; /* Separator for controls */
         }
-        
-        /* New styles for foldable JSON */
+        .schema-controls .btn {
+            margin-right: 8px;
+            padding: 6px 12px; /* Touch-friendly padding for control buttons */
+            font-size: 0.85rem;
+        }
+
+        /* Foldable JSON tree styling */
         .json-container {
-            font-family: monospace;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.875em; /* Slightly larger base font for JSON */
             margin: 0;
             padding: 0;
+            overflow-x: auto; /* Allow horizontal scrolling for very wide JSON */
         }
         .json-container .collapsible {
             position: relative;
             cursor: pointer;
+            padding-left: 22px; /* Increased space for the pseudo-element */
         }
-        .json-container .collapsible:before {
+        .json-container .collapsible:before { /* The +/- icon */
             content: "-";
             position: absolute;
-            left: -15px;
-            width: 12px;
-            height: 12px;
-            line-height: 10px;
+            left: 0px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;  /* Increased size for touch */
+            height: 18px; /* Increased size for touch */
+            line-height: 16px; /* Adjusted for new size */
             text-align: center;
-            background-color: #ddd;
-            color: #333;
-            border-radius: 2px;
+            background-color: #007bff; /* Bootstrap primary color */
+            color: white;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 14px; /* Larger icon font */
+            transition: background-color 0.2s ease; /* Smooth transition */
+        }
+        .json-container .collapsible:hover:before {
+            background-color: #0056b3; /* Darken on hover */
         }
         .json-container .collapsed:before {
             content: "+";
+            background-color: #6c757d; /* Bootstrap secondary color for collapsed state */
         }
-        .json-container .collapsed + ul,
-        .json-container .collapsed + span + ul {
+        .json-container .collapsed:hover:before {
+            background-color: #545b62; /* Darken on hover for collapsed */
+        }
+        .json-container .collapsed + ul { /* Hide children of collapsed items */
             display: none;
         }
         .json-container ul {
             list-style: none;
             margin: 0;
             padding: 0;
-            padding-left: 20px;
+            padding-left: 25px; /* Indentation for nested levels */
+            border-left: 1px solid #e0e0e0; /* Subtle guide line for nesting */
         }
         .json-container li {
             position: relative;
-            padding-left: 5px;
+            padding: 2px 0 2px 5px; /* Vertical padding for items and small left padding */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) { /* Tablet and smaller */
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .lead {
+                font-size: 1rem;
+            }
+            .btn { /* General button sizing for mobile */
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .view-button {
+                padding: 10px 15px; /* Ensure main action button is prominent */
+            }
+            .json-container .collapsible:before {
+                width: 20px; /* Slightly larger icon on mobile */
+                height: 20px;
+                line-height: 18px;
+                font-size: 15px;
+            }
+            .json-container ul {
+                padding-left: 20px; /* Slightly reduce indent on mobile */
+            }
+            .card-header h2 {
+                font-size: 1.3rem;
+            }
+        }
+        @media (max-width: 576px) { /* Mobile phones */
+            .card-header h2 {
+                font-size: 1.2rem; /* Adjust schema title size */
+            }
+            .card-header .btn-outline-primary { /* Raw JSON button */
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+            .schema-controls .btn {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+            .json-container {
+                font-size: 0.8em; /* Slightly smaller JSON font on very small screens */
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Event Schemas Documentation</h1>
-        
         <p class="lead">This site provides documentation for event schemas used in our system.</p>
-        
+
         <div class="row">
             <div class="col-md-12">
                 <div class="card schema-card">
@@ -120,122 +199,202 @@
                     </div>
                     <div class="card-body">
                         <p id="billpay-description">Loading schema description...</p>
-                        <div class="d-flex">
-                            <span class="view-button" onclick="toggleSchemaView('billpay-schema')">View Schema</span>
+                        <div class="d-flex mb-3"> <button class="btn btn-primary view-button" onclick="toggleSchemaView('billpay-schema')">View Schema</button>
                         </div>
                         <div id="billpay-schema" class="schema-viewer">
-                            <div id="billpay-json" class="json-container"></div>
+                            <div class="schema-controls">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="expandAll('billpay-json')">Expand All</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="collapseAll('billpay-json')">Collapse All</button>
+                            </div>
+                            <div id="billpay-json" class="json-container">
+                                </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-5">
-            <div class="col-md-12">
+
+        <div class="row mt-4"> <div class="col-md-12">
                 <h2>Available Schemas</h2>
                 <ul class="list-group" id="schema-list">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>BillpayEvents Schema</span>
-                        <a href="v1/BillpayEvents.json" class="btn btn-sm btn-outline-primary">View</a>
-                    </li>
-                    <!-- More schema links will be added here dynamically if found -->
-                </ul>
+                        <a href="v1/BillpayEvents.json" class="btn btn-sm btn-outline-info">View Raw</a> </li>
+                    </ul>
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle schema viewer visibility
-        function toggleSchemaView(id) {
-            const viewer = document.getElementById(id);
-            viewer.style.display = viewer.style.display === 'block' ? 'none' : 'block';
+        // Configuration: Defines how deep the JSON tree should be expanded by default.
+        // Levels are 0-indexed.
+        // MAX_COLLAPSE_DEPTH = 0: Only the root is expanded, its direct children are collapsed.
+        // MAX_COLLAPSE_DEPTH = 1: Root (depth 0) and its direct children (depth 1) are expanded. Grandchildren (depth 2+) are collapsed.
+        const MAX_COLLAPSE_DEPTH = 1;
+
+        /**
+         * Toggles the visibility of the schema viewer.
+         * @param {string} viewerId - The ID of the schema viewer element.
+         */
+        function toggleSchemaView(viewerId) {
+            const viewer = document.getElementById(viewerId);
+            const button = event.currentTarget; // Get the button that was clicked
+
+            if (viewer.style.display === 'block') {
+                viewer.style.display = 'none';
+                button.textContent = 'View Schema';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+            } else {
+                viewer.style.display = 'block';
+                button.textContent = 'Hide Schema';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-danger');
+                // Note: JSON is loaded once on DOMContentLoaded. If dynamic reloading per view is needed,
+                // the fetch and render logic would need to be invoked here.
+            }
         }
 
-        // Create foldable JSON representation
-        function renderJSON(obj, container) {
+        /**
+         * Renders a JSON object as a foldable HTML tree.
+         * @param {any} obj - The JavaScript object or array to render.
+         * @param {HTMLElement} container - The HTML element to render the JSON into.
+         * @param {number} currentDepth - The current nesting depth of the rendering.
+         * @param {number} autoCollapseStartDepth - The depth at which elements should be collapsed by default.
+         */
+        function renderJSON(obj, container, currentDepth, autoCollapseStartDepth) {
+            // Handle primitive types
             if (typeof obj !== 'object' || obj === null) {
-                // Primitive value
                 const valueSpan = document.createElement('span');
                 if (obj === null) {
-                    valueSpan.className = 'json-null';
-                    valueSpan.textContent = 'null';
+                    valueSpan.className = 'json-null'; valueSpan.textContent = 'null';
                 } else if (typeof obj === 'string') {
-                    valueSpan.className = 'json-string';
-                    valueSpan.textContent = `"${obj}"`;
+                    valueSpan.className = 'json-string'; valueSpan.textContent = `"${obj}"`;
                 } else if (typeof obj === 'number') {
-                    valueSpan.className = 'json-number';
-                    valueSpan.textContent = obj;
+                    valueSpan.className = 'json-number'; valueSpan.textContent = obj;
                 } else if (typeof obj === 'boolean') {
-                    valueSpan.className = 'json-boolean';
-                    valueSpan.textContent = obj;
+                    valueSpan.className = 'json-boolean'; valueSpan.textContent = obj;
                 } else {
-                    valueSpan.textContent = obj;
+                    valueSpan.textContent = String(obj); // Fallback for other primitive types
                 }
                 container.appendChild(valueSpan);
                 return;
             }
 
             const isArray = Array.isArray(obj);
+            const keys = Object.keys(obj);
+
+            // Handle empty objects/arrays: display as {} or [] on one line, not collapsible.
+            if (keys.length === 0) {
+                const emptyBracketSpan = document.createElement('span');
+                emptyBracketSpan.textContent = isArray ? '[]' : '{}';
+                container.appendChild(emptyBracketSpan);
+                return;
+            }
+
+            // For non-empty objects/arrays:
             const bracketSpan = document.createElement('span');
             bracketSpan.className = 'collapsible';
             bracketSpan.textContent = isArray ? '[' : '{';
-            bracketSpan.addEventListener('click', function() {
+
+            // Auto-collapse based on depth:
+            // If currentDepth is >= autoCollapseStartDepth, this node starts collapsed.
+            if (currentDepth >= autoCollapseStartDepth) {
+                bracketSpan.classList.add('collapsed');
+            }
+
+            bracketSpan.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent event bubbling to parent list items
                 this.classList.toggle('collapsed');
             });
             container.appendChild(bracketSpan);
 
-            const list = document.createElement('ul');
-            container.appendChild(list);
+            const listElement = document.createElement('ul');
+            container.appendChild(listElement);
 
-            const keys = Object.keys(obj);
             keys.forEach((key, index) => {
-                const item = document.createElement('li');
-                list.appendChild(item);
-                
-                if (!isArray) {
+                const listItem = document.createElement('li');
+                listElement.appendChild(listItem);
+
+                if (!isArray) { // For objects, add the key
                     const keySpan = document.createElement('span');
                     keySpan.className = 'json-key';
                     keySpan.textContent = `"${key}": `;
-                    item.appendChild(keySpan);
+                    listItem.appendChild(keySpan);
                 }
 
-                renderJSON(obj[key], item);
-                
-                if (index < keys.length - 1) {
+                // Recursive call for the value, incrementing depth
+                renderJSON(obj[key], listItem, currentDepth + 1, autoCollapseStartDepth);
+
+                if (index < keys.length - 1) { // Add a comma if not the last item
                     const commaSpan = document.createElement('span');
                     commaSpan.textContent = ',';
-                    item.appendChild(commaSpan);
+                    listItem.appendChild(commaSpan);
                 }
             });
 
+            // Add the closing bracket (e.g., '}' or ']') as a new list item within the UL
             const closingBracketItem = document.createElement('li');
             closingBracketItem.textContent = isArray ? ']' : '}';
-            list.appendChild(closingBracketItem);
+            listElement.appendChild(closingBracketItem);
         }
 
-        // Load schema data
+        /**
+         * Collapses all collapsible elements within a given container.
+         * @param {string} containerId - The ID of the container holding the JSON tree.
+         */
+        function collapseAll(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const collapsibleElements = container.querySelectorAll('.json-container .collapsible');
+                collapsibleElements.forEach(el => {
+                    el.classList.add('collapsed');
+                });
+            }
+        }
+
+        /**
+         * Expands all collapsible elements within a given container.
+         * @param {string} containerId - The ID of the container holding the JSON tree.
+         */
+        function expandAll(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const collapsibleElements = container.querySelectorAll('.json-container .collapsible');
+                collapsibleElements.forEach(el => {
+                    el.classList.remove('collapsed');
+                });
+            }
+        }
+
+        // Load schema data when the DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
+            const billpayDescriptionElement = document.getElementById('billpay-description');
+            const billpayJsonContainer = document.getElementById('billpay-json');
+
             fetch('v1/BillpayEvents.json')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Failed to fetch schema file');
+                        throw new Error(`Failed to fetch schema file: ${response.status} ${response.statusText}`);
                     }
                     return response.json();
                 })
                 .then(data => {
                     // Set schema description
-                    document.getElementById('billpay-description').textContent = 
+                    billpayDescriptionElement.textContent =
                         data.description || 'Schema for billpay events in our system.';
-                    
+
                     // Render foldable JSON
-                    const container = document.getElementById('billpay-json');
-                    renderJSON(data, container);
+                    billpayJsonContainer.innerHTML = ''; // Clear any previous content or loading messages
+                    renderJSON(data, billpayJsonContainer, 0, MAX_COLLAPSE_DEPTH);
                 })
                 .catch(error => {
                     console.error('Error loading schema:', error);
-                    document.getElementById('billpay-description').textContent = 
-                        'Error loading schema. Please check the console for details.';
+                    billpayDescriptionElement.textContent =
+                        `Error loading schema. Please check the console for details. (${error.message})`;
+                    if (billpayJsonContainer) {
+                        billpayJsonContainer.innerHTML = `<span class="json-null" style="color: red;">Error: Could not load schema data.</span>`;
+                    }
                 });
         });
     </script>
