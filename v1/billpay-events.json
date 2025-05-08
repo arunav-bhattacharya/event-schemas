@@ -1,0 +1,366 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Billpay CloudEvent Schema",
+  "description": "Schema for payment and refund processing events following CloudEvent specification",
+  "required": [
+    "id",
+    "source",
+    "specversion",
+    "type",
+    "datacontenttype",
+    "dataschema",
+    "time",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the event",
+      "examples": ["f81d4fae-7dec-11d0-a765-00a0c91e6bf6"]
+    },
+    "source": {
+      "type": "string",
+      "description": "Source system generating the event",
+      "examples": ["BILLPAY"]
+    },
+    "specversion": {
+      "type": "string",
+      "description": "CloudEvents specification version",
+      "examples": ["1.0"]
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of event",
+      "enum": [
+        "PAYMENT_PENDING",
+        "PAYMENT_SCHEDULED",
+        "PAYMENT_ACCEPTED",
+        "PAYMENT_DECLINED",
+        "PAYMENT_PROCESSING",
+        "PAYMENT_PROCESSED",
+        "PAYMENT_PAID",
+        "PAYMENT_RETURNED",
+        "PAYMENT_REPRESENTED",
+        "PAYMENT_REPRESENTING",
+        "PAYMENT_CANCELLED"
+      ],
+      "examples": ["PAYMENT_PROCESSING"]
+    },
+    "datacontenttype": {
+      "type": "string",
+      "description": "Content type of the data attribute",
+      "examples": ["application/json"]
+    },
+    "dataschema": {
+      "type": "string",
+      "format": "uri",
+      "description": "URI where schema is hosted",
+      "examples": [
+        "https://github.aexp.com/amex-eng/billpay-core/docs/billpay-events.v1.json"
+      ]
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO format UTC timestamp when event occurred",
+      "examples": ["2025-05-07T15:42:27Z"]
+    },
+    "data": {
+      "type": "object",
+      "description": "Event payload containing transaction and audit information",
+      "required": ["transaction", "audit"],
+      "properties": {
+        "transaction": {
+          "type": "object",
+          "description": "Details of a Payment or Refund transaction",
+          "required": [
+            "id",
+            "type",
+            "account",
+            "instrument",
+            "instrumentEnrollmentId",
+            "confirmationCode",
+            "status",
+            "source",
+            "option",
+            "frequency",
+            "money",
+            "datetime",
+            "moneyMovementRequired",
+            "presentmentSequence",
+            "isSplit"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique transaction identifier in ULID format",
+              "examples": ["01F8MHAMZYWCBG3T1ZFHH5P38D"]
+            },
+            "type": {
+              "type": "string",
+              "description": "Transaction type",
+              "enum": ["PAYMENT", "REFUND"],
+              "examples": ["PAYMENT"]
+            },
+            "account": {
+              "type": "object",
+              "description": "Account information",
+              "required": ["pan15", "token", "country", "type", "isBasic"],
+              "properties": {
+                "pan15": {
+                  "type": "string",
+                  "description": "15-digit card account number",
+                  "pattern": "^[0-9]{15}$",
+                  "examples": ["123456789012345"]
+                },
+                "token": {
+                  "type": "string",
+                  "description": "Account token",
+                  "examples": ["FGS378287DH"]
+                },
+                "country": {
+                  "type": "string",
+                  "description": "Country code",
+                  "pattern": "^[A-Z]{2}$",
+                  "examples": ["MX"]
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Account type",
+                  "enum": ["CONSUMER", "CORPORATE", "SMALL_BUSINESS"],
+                  "examples": ["CONSUMER"]
+                },
+                "productType": {
+                  "type": "string",
+                  "description": "Product type",
+                  "enum": ["CHARGE", "REVOLVE"],
+                  "examples": ["CHARGE"]
+                },
+                "isBasic": {
+                  "type": "string",
+                  "description": "Indicates if account is basic",
+                  "enum": ["Y", "N"],
+                  "examples": ["Y"]
+                }
+              }
+            },
+            "instrument": {
+              "type": "object",
+              "description": "Payment instrument details",
+              "required": [
+                "token",
+                "type",
+                "redactedIdentifier",
+                "institutionCode",
+                "institutionName"
+              ],
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "Instrument token",
+                  "examples": ["123e4567-e89b-12d3-a456-426614174000"]
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Instrument type",
+                  "enum": ["FINANCIAL_INSTITUTION_ACCOUNT", "DEBIT_CARD"],
+                  "examples": ["FINANCIAL_INSTITUTION_ACCOUNT"]
+                },
+                "redactedIdentifier": {
+                  "type": "string",
+                  "description": "Last digits of the account",
+                  "examples": ["6789"]
+                },
+                "institutionCode": {
+                  "type": "string",
+                  "description": "Financial institution code",
+                  "examples": ["12345678"]
+                },
+                "institutionName": {
+                  "type": "string",
+                  "description": "Financial institution name",
+                  "examples": ["Bank of ABC City"]
+                }
+              }
+            },
+            "instrumentEnrollmentId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Instrument enrollment identifier",
+              "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+            },
+            "confirmationCode": {
+              "type": "string",
+              "description": "Payment confirmation code",
+              "examples": ["W12392"]
+            },
+            "status": {
+              "type": "string",
+              "description": "Transaction status",
+              "enum": [
+                "PENDING",
+                "SCHEDULED",
+                "ACCEPTED",
+                "DECLINED",
+                "PROCESSING",
+                "PROCESSED",
+                "PAID",
+                "RETURNED",
+                "REPRESENTED",
+                "REPRESENTING",
+                "CANCELLED"
+              ],
+              "examples": ["PROCESSING"]
+            },
+            "source": {
+              "type": "string",
+              "description": "Source channel of the transaction",
+              "enum": ["WEB", "MOBILE", "REP", "IVR", "OTHER"],
+              "examples": ["WEB"]
+            },
+            "option": {
+              "type": "string",
+              "description": "Payment option selected",
+              "enum": [
+                "MINIMUM_DUE",
+                "STATEMENT_BALANCE",
+                "TOTAL_BALANCE",
+                "OTHER_AMOUNT"
+              ],
+              "examples": ["MINIMUM_DUE"]
+            },
+            "frequency": {
+              "type": "string",
+              "description": "Payment frequency",
+              "enum": ["ONCE", "SCHEDULED_ONCE", "RECURRING"],
+              "examples": ["ONCE"]
+            },
+            "money": {
+              "type": "object",
+              "description": "Payment amount details",
+              "required": ["amount", "currency"],
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "description": "Payment amount",
+                  "pattern": "^\\d+\\.\\d{2}$",
+                  "examples": ["19234.56"]
+                },
+                "currency": {
+                  "type": "string",
+                  "description": "Currency code",
+                  "pattern": "^[A-Z]{3}$",
+                  "examples": ["MXN"]
+                }
+              }
+            },
+            "datetime": {
+              "type": "object",
+              "description": "Timestamps related to transaction processing",
+              "properties": {
+                "captureTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "ISO UTC timestamp when transaction was captured",
+                  "examples": ["2025-05-07T10:30:15Z"]
+                },
+                "transactionDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Date of transaction",
+                  "examples": ["2025-05-07"]
+                },
+                "scheduleDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Date scheduled for processing",
+                  "examples": ["2025-05-08"]
+                },
+                "clearingDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Date of payment clearing",
+                  "examples": ["2025-05-09"]
+                },
+                "executionTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "ISO UTC timestamp when transaction is executed",
+                  "examples": ["2025-05-07T11:45:22Z"]
+                }
+              }
+            },
+            "moneyMovementRequired": {
+              "type": "string",
+              "description": "Indicates if money movement is required",
+              "enum": ["Y", "N"],
+              "examples": ["Y"]
+            },
+            "presentmentSequence": {
+              "type": "string",
+              "description": "Sequence number of presentment",
+              "examples": ["1"]
+            },
+            "isSplit": {
+              "type": "string",
+              "description": "Indicates if payment is split",
+              "enum": ["Y", "N"],
+              "examples": ["Y"]
+            }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "description": "Audit information",
+          "required": ["updateBy", "updateTime"],
+          "properties": {
+            "updateBy": {
+              "type": "string",
+              "description": "Entity that updated the record",
+              "examples": ["SYSTEM"]
+            },
+            "updateTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO UTC timestamp of update",
+              "examples": ["2025-05-07T15:42:00Z"]
+            },
+            "execution": {
+              "type": "array",
+              "description": "List of execution steps",
+              "items": {
+                "type": "object",
+                "required": ["system", "activity", "executedAt"],
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "description": "System where execution occurred",
+                    "enum": ["GAR", "CAS", "MultiRail"],
+                    "examples": ["GAR", "CAS", "MultiRail"]
+                  },
+                  "activity": {
+                    "type": "string",
+                    "description": "Activity performed",
+                    "examples": [
+                      "Reduce Statement Balance",
+                      "Increase Credit Exposure",
+                      "Initiate Money Movement"
+                    ]
+                  },
+                  "executedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO UTC timestamp of execution",
+                    "examples": ["2025-05-07T15:42:05Z"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
