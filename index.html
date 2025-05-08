@@ -63,20 +63,60 @@
         .view-button:hover {
             text-decoration: underline;
         }
+        
+        /* New styles for foldable JSON */
+        .json-container {
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+        }
+        .json-container .collapsible {
+            position: relative;
+            cursor: pointer;
+        }
+        .json-container .collapsible:before {
+            content: "-";
+            position: absolute;
+            left: -15px;
+            width: 12px;
+            height: 12px;
+            line-height: 10px;
+            text-align: center;
+            background-color: #ddd;
+            color: #333;
+            border-radius: 2px;
+        }
+        .json-container .collapsed:before {
+            content: "+";
+        }
+        .json-container .collapsed + ul,
+        .json-container .collapsed + span + ul {
+            display: none;
+        }
+        .json-container ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            padding-left: 20px;
+        }
+        .json-container li {
+            position: relative;
+            padding-left: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Billpay Events Schema Documentation</h1>
+        <h1>Event Schemas Documentation</h1>
         
-        <p class="lead">This site provides documentation for Billpay Payment and Refund Events</p>
+        <p class="lead">This site provides documentation for event schemas used in our system.</p>
         
         <div class="row">
             <div class="col-md-12">
                 <div class="card schema-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h2 class="mb-0">Billpay Events Schema</h2>
-                        <a href="v1/billpay-events.json" class="btn btn-sm btn-outline-primary">Raw JSON</a>
+                        <a href="v1/BillpayEvents.json" class="btn btn-sm btn-outline-primary">Raw JSON</a>
                     </div>
                     <div class="card-body">
                         <p id="billpay-description">Loading schema description...</p>
@@ -84,7 +124,7 @@
                             <span class="view-button" onclick="toggleSchemaView('billpay-schema')">View Schema</span>
                         </div>
                         <div id="billpay-schema" class="schema-viewer">
-                            <pre><code id="billpay-json"></code></pre>
+                            <div id="billpay-json" class="json-container"></div>
                         </div>
                     </div>
                 </div>
@@ -97,7 +137,7 @@
                 <ul class="list-group" id="schema-list">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>BillpayEvents Schema</span>
-                        <a href="v1/billpay-events.json" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="v1/BillpayEvents.json" class="btn btn-sm btn-outline-primary">View</a>
                     </li>
                     <!-- More schema links will be added here dynamically if found -->
                 </ul>
@@ -106,38 +146,77 @@
     </div>
 
     <script>
-        // Function to syntax highlight JSON
-        function syntaxHighlight(json) {
-            if (typeof json !== 'string') {
-                json = JSON.stringify(json, null, 2);
-            }
-            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                let cls = 'json-number';
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = 'json-key';
-                    } else {
-                        cls = 'json-string';
-                    }
-                } else if (/true|false/.test(match)) {
-                    cls = 'json-boolean';
-                } else if (/null/.test(match)) {
-                    cls = 'json-null';
-                }
-                return '<span class="' + cls + '">' + match + '</span>';
-            });
-        }
-
         // Toggle schema viewer visibility
         function toggleSchemaView(id) {
             const viewer = document.getElementById(id);
             viewer.style.display = viewer.style.display === 'block' ? 'none' : 'block';
         }
 
+        // Create foldable JSON representation
+        function renderJSON(obj, container) {
+            if (typeof obj !== 'object' || obj === null) {
+                // Primitive value
+                const valueSpan = document.createElement('span');
+                if (obj === null) {
+                    valueSpan.className = 'json-null';
+                    valueSpan.textContent = 'null';
+                } else if (typeof obj === 'string') {
+                    valueSpan.className = 'json-string';
+                    valueSpan.textContent = `"${obj}"`;
+                } else if (typeof obj === 'number') {
+                    valueSpan.className = 'json-number';
+                    valueSpan.textContent = obj;
+                } else if (typeof obj === 'boolean') {
+                    valueSpan.className = 'json-boolean';
+                    valueSpan.textContent = obj;
+                } else {
+                    valueSpan.textContent = obj;
+                }
+                container.appendChild(valueSpan);
+                return;
+            }
+
+            const isArray = Array.isArray(obj);
+            const bracketSpan = document.createElement('span');
+            bracketSpan.className = 'collapsible';
+            bracketSpan.textContent = isArray ? '[' : '{';
+            bracketSpan.addEventListener('click', function() {
+                this.classList.toggle('collapsed');
+            });
+            container.appendChild(bracketSpan);
+
+            const list = document.createElement('ul');
+            container.appendChild(list);
+
+            const keys = Object.keys(obj);
+            keys.forEach((key, index) => {
+                const item = document.createElement('li');
+                list.appendChild(item);
+                
+                if (!isArray) {
+                    const keySpan = document.createElement('span');
+                    keySpan.className = 'json-key';
+                    keySpan.textContent = `"${key}": `;
+                    item.appendChild(keySpan);
+                }
+
+                renderJSON(obj[key], item);
+                
+                if (index < keys.length - 1) {
+                    const commaSpan = document.createElement('span');
+                    commaSpan.textContent = ',';
+                    item.appendChild(commaSpan);
+                }
+            });
+
+            const closingBracketItem = document.createElement('li');
+            closingBracketItem.textContent = isArray ? ']' : '}';
+            list.appendChild(closingBracketItem);
+        }
+
         // Load schema data
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('v1/billpay-events.json')
+            fetch('v1/BillpayEvents.json')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to fetch schema file');
@@ -149,8 +228,9 @@
                     document.getElementById('billpay-description').textContent = 
                         data.description || 'Schema for billpay events in our system.';
                     
-                    // Update schema JSON display
-                    document.getElementById('billpay-json').innerHTML = syntaxHighlight(data);
+                    // Render foldable JSON
+                    const container = document.getElementById('billpay-json');
+                    renderJSON(data, container);
                 })
                 .catch(error => {
                     console.error('Error loading schema:', error);
